@@ -6,14 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
 
@@ -23,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
     TextView infoIp;
     TextView infoMsg;
 
+    final static int SERVER_PORT = 8888;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
         welcomeMsg =  findViewById(R.id.welcomemsg);
         infoIp = findViewById(R.id.infoip);
         infoMsg = findViewById(R.id.msg);
-        infoIp.setText(getIpAddress() + ":" + HttpServerThread.HttpServerPORT + "\n");
+        infoIp.setText(getIpAddress() + ":" + SERVER_PORT + "\n");
         final Intent serviceIntent = new Intent(this, WebServerService.class);
         startService(serviceIntent);
     }

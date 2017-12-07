@@ -1,39 +1,60 @@
 package rest.taron.com.myapplication;
 
 
+import android.content.res.AssetManager;
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class HttpServerThread extends Thread {
 
-    static final int HttpServerPORT = 8888;
+    private static final String TAG = "WebPrintServer";
+
+    /**
+     * The Socket that we listen to.
+     */
+    Socket mSocket;
+
+    /**
+     * For loading files to serve.
+     */
+    private final AssetManager mAssets;
+
+    /**
+     * The port number we listen to
+     */
+    private final int mPort;
+
+    HttpServerThread(final int port, AssetManager assets) {
+        mAssets = assets;
+        mPort = port;
+    }
+
+
     @Override
     public void run() {
-        Socket socket = null;
         ServerSocket httpServerSocket = null;
         try {
-            httpServerSocket = new ServerSocket(HttpServerPORT);
-            while(true){
-                socket = httpServerSocket.accept();
-
+            httpServerSocket = new ServerSocket(mPort);
+            while (true) {
+                mSocket = httpServerSocket.accept();
                 HttpResponseThread httpResponseThread = new HttpResponseThread(
-                                socket,
-                                "Hello from web server");
+                        mSocket, mAssets);
                 httpResponseThread.start();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         } finally {
             try {
                 if (null != httpServerSocket) {
                     httpServerSocket.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, e.getMessage());
             }
         }
 
     }
-
 }

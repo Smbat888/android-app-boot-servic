@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 public class WebServerService extends Service {
 
-    private Handler mHandler=new Handler();
+    private Handler mHandler = new Handler();
 
     public WebServerService() {
     }
@@ -36,13 +36,13 @@ public class WebServerService extends Service {
         sendBroadcast(new Intent("YouWillNeverKillMe"));
     }
 
-    public void runOnNewThread() throws Exception{
-        mHandler.post(new Runnable(){
-            public void run(){
+    public void runOnNewThread() throws Exception {
+        mHandler.post(new Runnable() {
+            public void run() {
                 for (int i = 0; i < 10; i++) {
                     Toast.makeText(getBaseContext(), "test", Toast.LENGTH_LONG).show();
                 }
-                HttpServerThread httpServerThread = new HttpServerThread();
+                HttpServerThread httpServerThread = new HttpServerThread(MainActivity.SERVER_PORT, getBaseContext().getAssets());
                 httpServerThread.start();
             }
         });
