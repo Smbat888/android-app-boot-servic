@@ -1,9 +1,7 @@
 package com.mikhaellopez.androidwebserver;
 
 import android.content.res.Resources;
-import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Log;
 
 import org.w3c.dom.Document;
@@ -12,12 +10,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -40,9 +33,9 @@ import fi.iki.elonen.NanoHTTPD;
 public class AndroidWebServer extends NanoHTTPD {
 
     private static final String MIME_XML = "application/xml";
-    private static final String ENDPOINT_TO_GET_STATUS = "api/v1/fsstatus.xml";
-    private static final String ENDPOINT_TO_PRINT_TEXT = "api/v1/printtxt.xml";
-    private static final String ENDPOINT_TO_PRINT_CHART = "api/v1/printimg.xml";
+    private static final String ENDPOINT_TO_GET_STATUS = "/api/v1/fsstatus.xml";
+    private static final String ENDPOINT_TO_PRINT_TEXT = "/api/v1/printtxt.xml";
+    private static final String ENDPOINT_TO_PRINT_CHART = "/api/v1/printimg.xml";
 
     public AndroidWebServer(int port) {
         super(port);
@@ -54,20 +47,11 @@ public class AndroidWebServer extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
-//        String msg = "<html><body><h1>Hello server</h1>\n";
-//        Map<String, String> parms = session.getParms();
-//        if (parms.get("username") == null) {
-//            msg += "<form action='?' method='get'>\n  <p>Your name: <input type='text' name='username'></p>\n" + "</form>\n";
-//        } else {
-//            msg += "<p>Hello, " + parms.get("username") + "!</p>";
-//        }
-//        return newFixedLengthResponse( msg + "</body></html>\n" );
         try {
             Method method = session.getMethod();
             String uri = session.getUri();
             Map<String, String> parms = session.getParms();
             return serveClock(session, uri, method, parms);
-
         } catch (IOException ioe) {
             return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage());
         } catch (ResponseException re) {
@@ -79,85 +63,52 @@ public class AndroidWebServer extends NanoHTTPD {
         }
     }
 
-    private Response serveClock(IHTTPSession session, String uri, Method method, Map<String, String> parms)  throws IOException, ResponseException {
-        String responseString = "";
+    private Response serveClock(IHTTPSession session, String uri, Method method, Map<String, String> parms) throws IOException, ResponseException {
+        Map<String, String> body = new HashMap<>();
         Response res = null;
-        Map<String, String> files = new HashMap<>();
-        session.parseBody(files);
         do {
-            if(Method.GET.equals(method)) {
-                responseString = handleGet(session, parms);
+            if (Method.GET.equals(method)) {
                 break;
             }
             String route = null;
             String endpointName = null;
-            BufferedReader reader = new BufferedReader(new InputStreamReader(session.getInputStream()));
-            int contentLength = 0;
-            if(Method.POST.equals(method)) {
-                String line;
-                while (!TextUtils.isEmpty(line = reader.readLine())) {
-                    final String contentHeader = "Content-Length: ";
-                    if (line.startsWith(contentHeader)) {
-                        contentLength = Integer.parseInt(line.substring(contentHeader.length()));
-                    }
-                    int start = uri.indexOf('/') + 1;
-                    int end = uri.indexOf(' ', start);
-                    route = uri.substring(start, end);
-                    switch (route) {
-                        case ENDPOINT_TO_GET_STATUS:
-                            endpointName = "Get Status";
-                            break;
-                        case ENDPOINT_TO_PRINT_TEXT:
-                            endpointName = "Print Text";
-                            break;
-                        case ENDPOINT_TO_PRINT_CHART:
-                            endpointName = "Print Chart";
-                            break;
-                        default:
-//                        writeClientError(response,   NOT_FOUND_CODE, "The endpoint is not supported for the first phase");
-                    }
-                    responseString = handlePost(session);
-                    break;
+            if (Method.POST.equals(method)) {
+                session.parseBody(body);
+                route = session.getUri();
+                switch (route) {
+                    case ENDPOINT_TO_GET_STATUS:
+                        endpointName = "Get Status";
+                        break;
+                    case ENDPOINT_TO_PRINT_TEXT:
+                        endpointName = "Print Text";
+                        break;
+                    case ENDPOINT_TO_PRINT_CHART:
+                        endpointName = "Print Chart";
+                        break;
+                    default:
+                        return returnError(Response.Status.NOT_FOUND, "The endpoint is not supported for the first phase");
                 }
             }
-
-//            throw new Resources.NotFoundException();
-
             String contentType = "";
             contentType = detectMimeType(route);
             if (null == contentType) {
-//                writeClientError(response, BAD_CONTENT_TYPE_CODE, "unsupported content type");
-                return null;
+                return returnError(Response.Status.BAD_REQUEST, "Unsupported content type");
             }
-            StringBuilder body = readFileFromRequest(reader, contentLength);
-
-            Document xml = stringToXML(body);
-            updateXmlFile(xml,endpointName);
+            Document xml = stringToXML(body.get("postData"));
+            updateXmlFile(xml, endpointName);
             final String responseXML = xmlToString(xml);
             if (null == xml || 0 == responseXML.length()) {
-//                writeClientError(response, BAD_REQUEST_CODE, "Malformed or empty XML file");
-                return null;
+                return returnError(Response.Status.BAD_REQUEST, "Malformed or empty XML file");
             }
-            res = newChunkedResponse(Response.Status.OK, contentType, new FileInputStream(responseXML));
-//            res.addHeader("Accept-Ranges", "bytes");
+            res = newFixedLengthResponse(Response.Status.OK, contentType, responseXML);
             res.addHeader("Content-Length", " " + responseXML.length());
-
-        } while(false);
-
+        } while (false);
         return res;
     }
 
     private String handleGet(IHTTPSession session, Map<String, String> parms) {
         return "{'name':'status', 'value':''}";
     }
-
-    private String handlePost(IHTTPSession session) throws IOException, ResponseException {
-        Map<String, String> files = new HashMap<String, String>();
-        session.parseBody(files);
-
-        return files.get("postData");
-    }
-
     private void updateXmlFile(final Document xml, final String msg) {
         Element child = xml.createElement("child");
         child.setAttribute("name", "updatedByServer");
@@ -166,13 +117,13 @@ public class AndroidWebServer extends NanoHTTPD {
         root.appendChild(child);
     }
 
-    private Document stringToXML(StringBuilder body) {
+    private Document stringToXML(String body) {
         Document xml = null;
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = null;
         try {
             dBuilder = dbFactory.newDocumentBuilder();
-            xml = dBuilder.parse(new InputSource(new StringReader(body.toString())));
+            xml = dBuilder.parse(new InputSource(new StringReader(body)));
         } catch (ParserConfigurationException | SAXException | IOException e) {
             return null;
         }
@@ -191,23 +142,13 @@ public class AndroidWebServer extends NanoHTTPD {
     }
 
     /**
-     * Writes a server error response (HTTP/1.0 500) to the given output stream.
-     *
-     * @param output The output stream.
-     */
-    private void writeServerError(final PrintStream output) {
-        output.println("HTTP/1.0 500 Internal Server Error");
-        output.flush();
-    }
-
-    /**
      * Writes a bad request error response (HTTP/1.0 400-499) to the given output stream.
      *
-     * @param output The output stream.
+     * @param errorCode
+     * @param errorMsg
      */
-    private void writeClientError(final PrintWriter output, final String errorCode, final String errorMsg) {
-        output.print("HTTP/1.0 " + errorCode + " " + errorMsg.toUpperCase() + "\r\n");
-        output.flush();
+    private Response returnError(final Response.IStatus errorCode, final String errorMsg) {
+        return newFixedLengthResponse(errorCode, MIME_PLAINTEXT, errorMsg);
     }
 
     /**
@@ -218,7 +159,7 @@ public class AndroidWebServer extends NanoHTTPD {
      */
     private String detectMimeType(String fileName) {
         if (fileName.endsWith(".xml")) {
-            return "application/xml";
+            return MIME_XML;
         }
         return null;
     }
