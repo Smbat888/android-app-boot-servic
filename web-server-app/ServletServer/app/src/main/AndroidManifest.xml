@@ -30,7 +30,7 @@
 
         <receiver android:name=".RestartServiceReceiver" >
             <intent-filter>
-                <action android:name="YouWillNeverKillMe" >
+                <action android:name="NEVER_KILLED_SERVER" >
                 </action>
             </intent-filter>
         </receiver>
