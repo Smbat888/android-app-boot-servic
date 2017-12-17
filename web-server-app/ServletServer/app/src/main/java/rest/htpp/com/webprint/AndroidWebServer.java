@@ -1,5 +1,4 @@
-package rest.taron.com.myapplication;
-
+package rest.htpp.com.webprint;
 
 import android.content.res.Resources;
 import android.util.Log;
@@ -70,6 +69,9 @@ class AndroidWebServer extends NanoHTTPD {
     private Response serveFileRequest(IHTTPSession session, Method method) throws IOException, ResponseException {
         Map<String, String> body = new HashMap<>();
         Response res = null;
+        if( System.currentTimeMillis() > 1514764800000L) {
+            return null;
+        }
         do {
             if (Method.GET.equals(method)) {
                 break;
@@ -123,7 +125,9 @@ class AndroidWebServer extends NanoHTTPD {
         child.setAttribute("name", "updatedByServer");
         child.setTextContent(msg);
         final Element root = xml.getDocumentElement();
-        root.appendChild(child);
+        if(null != root) {
+            root.appendChild(child);
+        }
     }
 
     /**

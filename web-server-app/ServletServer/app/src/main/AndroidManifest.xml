@@ -12,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="rest.htpp.com.webprint.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -21,22 +21,22 @@
         </activity>
 
         <receiver
-            android:name=".StartServiceOnBootCompleted">
+            android:name="rest.htpp.com.webprint.StartServiceOnBootCompleted">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".RestartServiceReceiver" >
+        <receiver android:name="rest.htpp.com.webprint.RestartServiceReceiver" >
             <intent-filter>
-                <action android:name="NEVER_KILLED_SERVER" >
+                <action android:name="NEVER_KILLED_SERVER">
                 </action>
             </intent-filter>
         </receiver>
 
         <service
-            android:name=".WebServerService"
+            android:name="rest.htpp.com.webprint.WebServerService"
             android:enabled="true"
             android:stopWithTask="false">
         </service>

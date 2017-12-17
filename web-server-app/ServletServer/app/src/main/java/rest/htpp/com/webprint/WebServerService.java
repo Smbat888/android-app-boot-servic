@@ -1,4 +1,4 @@
-package rest.taron.com.myapplication;
+package rest.htpp.com.webprint;
 
 import android.app.Service;
 import android.content.Intent;
@@ -53,9 +53,8 @@ public class WebServerService extends Service {
     /**
      * Start http web service thread in separate thread
      *
-     * @throws Exception
      */
-    public void runWebServerThread() throws Exception {
+    public void runWebServerThread() {
         mHandler.post(new Runnable() {
             public void run() {
                 Toast.makeText(getBaseContext(), "Service is connected", Toast.LENGTH_LONG).show();

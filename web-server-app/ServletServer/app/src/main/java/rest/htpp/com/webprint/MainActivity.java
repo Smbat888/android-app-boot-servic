@@ -1,4 +1,4 @@
-package rest.taron.com.myapplication;
+package rest.htpp.com.webprint;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,5 +15,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         final Intent serviceIntent = new Intent(this, WebServerService.class);
         startService(serviceIntent);
+        finish();
     }
 }
