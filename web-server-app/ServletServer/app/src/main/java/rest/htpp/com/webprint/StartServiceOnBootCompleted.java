@@ -12,9 +12,11 @@ import android.widget.Toast;
  */
 public class StartServiceOnBootCompleted extends BroadcastReceiver {
 
+    final String TOAST_TEXT = "Web Server is connected on Boot";
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, "Web Server is connected on Boot", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, TOAST_TEXT, Toast.LENGTH_LONG).show();
         final Intent serviceIntent = new Intent(context, WebServerService.class);
         context.startService(serviceIntent);
     }

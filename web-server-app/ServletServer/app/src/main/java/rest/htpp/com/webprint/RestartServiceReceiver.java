@@ -12,9 +12,11 @@ import android.widget.Toast;
  */
 public class RestartServiceReceiver extends BroadcastReceiver {
 
+    final String TOAST_TEXT = "Web Server is connected on Restart";
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        Toast.makeText(context, "Web Server is connected on Restart", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, TOAST_TEXT, Toast.LENGTH_LONG).show();
         context.startService(new Intent(context.getApplicationContext(), WebServerService.class));
     }
 }
