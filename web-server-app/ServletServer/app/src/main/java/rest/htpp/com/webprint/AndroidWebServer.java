@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -32,8 +33,7 @@ import fi.iki.elonen.NanoHTTPD;
 class AndroidWebServer extends NanoHTTPD {
 
     private static final String ENDPOINT_TO_GET_STATUS = "/api/v1/fsstatus.xml";
-    private static final String ENDPOINT_TO_PRINT_TEXT = "/api/v1/printtxt.xml";
-    private static final String ENDPOINT_TO_PRINT_CHART = "/api/v1/printimg.xml";
+    private static final String ENDPOINT_TO_PRINT_JOBS = "/api/v1/printers/printjobs.xml";
     private static final String MIME_XML = "application/xml";
     private static final String TAG = "TransformerException";
 
@@ -72,10 +72,6 @@ class AndroidWebServer extends NanoHTTPD {
      */
     private Response serveFileRequest(final IHTTPSession session, final Method method)
             throws IOException, ResponseException {
-        //TODO REMOVE
-        if (System.currentTimeMillis() > 1514764800000L) {
-            return null;
-        }
         if (Method.POST.equals(method)) {
             return collectResponse(session);
         }
@@ -84,7 +80,8 @@ class AndroidWebServer extends NanoHTTPD {
 
     /**
      * Collects http response for given request
-     * @param session  the session to parse body
+     *
+     * @param session the session to parse body
      * @return response with corresponding xml file  and headers
      * @throws IOException
      * @throws ResponseException
@@ -92,47 +89,41 @@ class AndroidWebServer extends NanoHTTPD {
     private Response collectResponse(final IHTTPSession session)
             throws IOException, ResponseException {
         final Map<String, String> body = new HashMap<>();
-        String route = null;
-        String endpointName = null;
         session.parseBody(body);
-        route = session.getUri();
-        endpointName = getEndpintName(route);
-        if (null == endpointName) {
-            return returnError(Response.Status.NOT_FOUND,
-                    "The endpoint is not supported for the first phase");
-        }
+        final String route = session.getUri();
         final String contentType = detectMimeType(route);
         if (null == contentType) {
             return returnError(Response.Status.BAD_REQUEST, "Unsupported content type");
         }
-        Document xml = stringToXML(body.get("postData"));
-        updateXmlFile(xml, endpointName);
-        final String responseXML = xmlToString(xml);
-        if (null == xml || null == responseXML || 0 == responseXML.length()) {
+        final Document xml = stringToXML(body.get("postData"));
+        if (null == xml) {
             return returnError(Response.Status.BAD_REQUEST, "Malformed or empty XML file");
         }
-        Response response = newFixedLengthResponse(Response.Status.OK, contentType, responseXML);
-        response.addHeader("Content-Length", " " + responseXML.getBytes().length);
-        return response;
-    }
-
-    /**
-     * Gets corresponding string value for given endpoint.
-     *
-     * @param route to check endpoint name
-     * @return endpoint name
-     */
-    private String getEndpintName(final String route) {
         switch (route) {
             case ENDPOINT_TO_GET_STATUS:
-                return "Get Status";
-            case ENDPOINT_TO_PRINT_TEXT:
-                return "Print Text";
-            case ENDPOINT_TO_PRINT_CHART:
-                return "Print Chart";
-            default:
+                //TODO phase 1.3
                 return null;
+            case ENDPOINT_TO_PRINT_JOBS:
+                final Map<Integer, String> printStatus = Printer.print(xml);
+                return createResponse(printStatus, contentType);
+            default:
+                return returnError(Response.Status.NOT_FOUND,
+                        "The endpoint is not supported for the first phase");
         }
+
+    }
+
+    private Response createResponse(final Map<Integer, String> printStatus, final String contentType) {
+        final Iterator it = printStatus.entrySet().iterator();
+        final Map.Entry pair = (Map.Entry) it.next();
+        Response.IStatus status = Response.Status.BAD_REQUEST;
+        final String msg = pair.getValue().toString();
+        if (200 == (int) pair.getKey()) {
+            status = Response.Status.OK;
+        }
+        Response response = newFixedLengthResponse(status, contentType, msg);
+        response.addHeader("Content-Length", " " + msg.getBytes().length);
+        return response;
     }
 
     /**

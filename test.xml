@@ -1,6 +1,9 @@
-<note>
-<to>Tove</to>
-<from>Jani</from>
-<heading>Reminder</heading>
-<body>Don't forget me this weekend!</body>
-</note>
+<?xml version="1.0" encoding="UTF-8"?>
+<printJob>
+<textInfo>
+<textData>verjapeeeeees tttttttttttttttttttttttttttttttt</textData>
+<fontName>AndroidClock.ttf</fontName>
+<fontSize>50</fontSize>
+</textInfo>
+<prnraw64>base 64<prnraw64>
+</printJob>

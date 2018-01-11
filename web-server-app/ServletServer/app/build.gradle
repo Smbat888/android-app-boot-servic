@@ -19,11 +19,15 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile 'org.nanohttpd:nanohttpd:2.2.0'
+    provided files('extern_libs/classes_2.1.26_20170608.jar')
+    compile files('libs/bcprov-jdk16-1.45.jar')
+    compile files('libs/bw_pos_sdk2.0.20.jar')
+    compile files('libs/core4.7.5.jar')
 }

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 数据库定义 -->
+<!-- version字段定义之后，如果需要修改表结构或者增加删除表，需要修改version，SDK自动根据版本号的更换重新初始化数据表，自动进行数据迁移，原数据不会丢失 -->
+<Database
+    name="Cashier.db"
+    defaultTable="transaction_data"
+    version="2" >
+
+    <!-- 交易数据保存 -->
+    <!-- primaryKey需要定义在第一个field里面 -->
+
+    <table
+        name="transaction_data"
+        primaryKey="id" >
+
+        <field name="id" /> <!-- 主键,只能自增长的integer -->
+
+        <field name="referenceNo" /> <!-- 参考号 ，可能多条，不能 -->
+        
+        <field name="trace" /> <!-- 流水号 -->
+        
+        <field name="merchant_name" /> <!-- 商户名称 -->
+
+        <field name="merchant_no" /> <!-- 商户号 -->
+
+        <field name="terminal_no" /> <!-- 终端号 -->
+
+        <field name="pay_type" /> <!-- 交易方式  银行卡支付还是移动支付 -->
+
+        <field name="func" /> <!-- 交易类型  消费，撤销，退货 -->
+
+        <field name="card_number" /> <!-- 卡号 -->
+
+        <field name="operatorNo" /> <!-- 操作员号 -->
+
+        <field name="exp_date" /> <!-- 有效期 -->
+
+        <field name="batch_no" /> <!-- 批次号 -->
+
+        <field name="auth_no" /> <!-- 授权号 -->
+
+        <field name="date_time" /> <!-- 交易时间 -->
+
+        <field name="amount" /> <!-- 交易金额 -->
+
+        <field name="ticket_no" /> <!-- 票据号 -->
+
+        <field name="iss_desc" /> <!-- 收单行 -->
+
+        <field name="issuerId2" /> <!-- 发卡行ID -->
+
+        <field name="app_lab" /> <!-- APP LAB -->
+
+        <field name="maskedPan" /> <!-- maskedPan -->
+
+        <field name="atc" /> <!-- ATC -->
+
+        <field name="aid" /> <!-- AID -->
+
+        <field name="csn" /> <!-- CSN -->
+
+        <field name="iad" /> <!-- IAD -->
+
+        <field name="tc" /> <!-- TC -->
+
+        <field name="aip" /> <!-- AIP -->
+
+        <field name="cardtype" /> <!-- 卡类型 。银行卡标志磁条，IC，RF  移动支付表示 微信，支付宝 -->
+
+        <field name="qrcode" /> <!-- 二维码，移动支付的时候返回 -->
+        
+        <field name="status" /> <!-- 此笔交易状态，正常，已撤销，已退货 -->
+        
+        <field name="oldreferenceNo" /> <!-- 原来的参考号-->
+        
+        <field name="oldtrace" /> <!-- 原来的流水号 -->
+        
+        <field name="installmentAmount" /> <!-- 原来的流水号 -->
+    </table>
+
+</Database>
