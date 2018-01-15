@@ -1,4 +1,4 @@
-package rest.htpp.com.webprint.xml-parser;
+package com.example.work.bytetoxmlparserapp;
 
 
 public class XMLDocConstants {
