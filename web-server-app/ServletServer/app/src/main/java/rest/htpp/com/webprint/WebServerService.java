@@ -11,6 +11,8 @@ import java.io.IOException;
 
 import fi.iki.elonen.NanoHTTPD;
 
+import static rest.htpp.com.webprint.constants.WebServerConstants.*;
+
 /**
  * The android service class which runs web server in corresponding thread.
  * The class is public to be accessible by android system
@@ -18,10 +20,7 @@ import fi.iki.elonen.NanoHTTPD;
  */
 public class WebServerService extends Service {
 
-    static final String TAG = "WebServerService";
-    static final String NEVER_KILLED_SERVER = "NEVER_KILLED_SERVER";
-    public static final String TOAST_TEXT = "Service is connected";
-    private static final int SERVER_PORT = 8888;
+    private static final String TAG = "WebServerService";
 
     private Handler mHandler = new Handler();
 

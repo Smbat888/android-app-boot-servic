@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -26,16 +25,18 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import fi.iki.elonen.NanoHTTPD;
+import rest.htpp.com.webprint.printer.Printer;
+
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_GET_STATUS;
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_JOBS;
+import static rest.htpp.com.webprint.constants.WebServerConstants.MIME_XML;
 
 /**
  * The android web server class to serve http POST requests with specified endpoints
  */
 class AndroidWebServer extends NanoHTTPD {
 
-    private static final String ENDPOINT_TO_GET_STATUS = "/api/v1/fsstatus.xml";
-    private static final String ENDPOINT_TO_PRINT_JOBS = "/api/v1/printers/printjobs.xml";
-    private static final String MIME_XML = "application/xml";
-    private static final String TAG = "TransformerException";
+    private static final String TAG = "AndroidWebServer";
 
     AndroidWebServer(int port) {
         super(port);
@@ -110,7 +111,6 @@ class AndroidWebServer extends NanoHTTPD {
                 return returnError(Response.Status.NOT_FOUND,
                         "The endpoint is not supported for the first phase");
         }
-
     }
 
     private Response createResponse(final Map<Integer, String> printStatus, final String contentType) {
@@ -118,31 +118,12 @@ class AndroidWebServer extends NanoHTTPD {
         final Map.Entry pair = (Map.Entry) it.next();
         Response.IStatus status = Response.Status.BAD_REQUEST;
         final String msg = pair.getValue().toString();
-        if (200 == (int) pair.getKey()) {
+        if (Response.Status.OK.getRequestStatus() == (int) pair.getKey()) {
             status = Response.Status.OK;
         }
         Response response = newFixedLengthResponse(status, contentType, msg);
         response.addHeader("Content-Length", " " + msg.getBytes().length);
         return response;
-    }
-
-    /**
-     * Updates xml document to append simple child element with custom value
-     *
-     * @param xml the provided document to update
-     * @param msg the message to append to created child element
-     */
-    private void updateXmlFile(final Document xml, final String msg) {
-        if (null == xml) {
-            return;
-        }
-        final Element child = xml.createElement("child");
-        child.setAttribute("name", "updatedByServer");
-        child.setTextContent(msg);
-        final Element root = xml.getDocumentElement();
-        if (null != root) {
-            root.appendChild(child);
-        }
     }
 
     /**
@@ -159,6 +140,7 @@ class AndroidWebServer extends NanoHTTPD {
             dBuilder = dbFactory.newDocumentBuilder();
             xml = dBuilder.parse(new InputSource(new StringReader(body)));
         } catch (ParserConfigurationException | SAXException | IOException e) {
+            Log.e(TAG, e.getMessage());
             return null;
         }
         return xml;
