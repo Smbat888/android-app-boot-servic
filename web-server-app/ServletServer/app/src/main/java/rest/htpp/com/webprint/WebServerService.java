@@ -7,6 +7,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.basewin.services.ServiceManager;
+
 import java.io.IOException;
 
 import fi.iki.elonen.NanoHTTPD;
@@ -76,6 +78,7 @@ public class WebServerService extends Service {
     private void serverRunner() {
         final AndroidWebServer androidWebServer = new AndroidWebServer(SERVER_PORT);
         try {
+            ServiceManager.getInstence().init(getApplicationContext());
             androidWebServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, true);
         } catch (IOException e) {
             Log.e(TAG,"Couldn't start server:" + e);

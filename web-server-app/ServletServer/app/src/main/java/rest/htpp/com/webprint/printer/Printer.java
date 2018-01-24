@@ -85,7 +85,7 @@ public class Printer {
                     "Malformed or empty XML file");
         } catch (Exception e) {
             printStatus.put(NanoHTTPD.Response.Status.BAD_REQUEST.getRequestStatus(),
-                    "Print failed");
+                    "Print failed " + e.getMessage());
         }
         return printStatus;
     }
