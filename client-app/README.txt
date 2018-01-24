@@ -1,3 +1,0 @@
-README for client
-
-### TODO
