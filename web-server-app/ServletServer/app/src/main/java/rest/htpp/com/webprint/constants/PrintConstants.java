@@ -1,4 +1,4 @@
-package rest.htpp.com.webprint.Constants;
+package rest.htpp.com.webprint.constants;
 
 /**
  * Created by tkalashy on 09.01.2018.

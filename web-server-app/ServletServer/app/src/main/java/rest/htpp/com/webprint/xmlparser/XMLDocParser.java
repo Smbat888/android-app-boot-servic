@@ -1,5 +1,6 @@
-package rest.htpp.com.webprint.xml-parser;
+package rest.htpp.com.webprint.xmlparser;
 
+import android.util.Log;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -17,8 +18,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import static rest.htpp.com.webprint.constants.XMLDocConstants.*;
+
 public class XMLDocParser {
 
+    private static final String TAG = "XMLDocParser";
     private byte [] mData;
 
     public XMLDocParser(byte [] response) {
@@ -28,38 +32,38 @@ public class XMLDocParser {
     public String getXMLDocument() {
         try {
             final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-            final Element root = doc.createElement(XMLDocConstants.FSSTATUS);
+            final Element root = doc.createElement(FSSTATUS);
             doc.appendChild(root);
 
-            final Element lifeTime = doc.createElement(XMLDocConstants.LIFE_TIME);
+            final Element lifeTime = doc.createElement(LIFE_TIME);
             root.appendChild(lifeTime);
             lifeTime.setTextContent(getLifeTime());
 
-            final Element docsKind = doc.createElement(XMLDocConstants.DOCS_KIND);
+            final Element docsKind = doc.createElement(DOCS_KIND);
             root.appendChild(docsKind);
             docsKind.setTextContent(getDocsKind());
 
-            final Element docsData = doc.createElement(XMLDocConstants.DOCS_DATA);
+            final Element docsData = doc.createElement(DOCS_DATA);
             root.appendChild(docsData);
             docsData.setTextContent(getDocsData());
 
-            final Element shiftMode = doc.createElement(XMLDocConstants.SHFT_MODE);
+            final Element shiftMode = doc.createElement(SHFT_MODE);
             root.appendChild(shiftMode);
             shiftMode.setTextContent(getShiftMode());
 
-            final Element warmFlag = doc.createElement(XMLDocConstants.WARM_FLAG);
+            final Element warmFlag = doc.createElement(WARM_FLAG);
             root.appendChild(warmFlag);
             warmFlag.setTextContent(getWarmFlag());
 
-            final Element dateTime = doc.createElement(XMLDocConstants.DATE_TIME);
+            final Element dateTime = doc.createElement(DATE_TIME);
             root.appendChild(dateTime);
             dateTime.setTextContent(getDateTime());
 
-            final Element deviceID = doc.createElement(XMLDocConstants.DEVICE_ID);
+            final Element deviceID = doc.createElement(DEVICE_ID);
             root.appendChild(deviceID);
             deviceID.setTextContent(getDeviceID());
 
-            final Element docsCode = doc.createElement(XMLDocConstants.DOCS_CODE);
+            final Element docsCode = doc.createElement(DOCS_CODE);
             root.appendChild(docsCode);
             docsCode.setTextContent(getDocsCode());
 
@@ -73,7 +77,7 @@ public class XMLDocParser {
             return writer.toString();
 
         } catch (ParserConfigurationException | TransformerException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
         return null;
     }

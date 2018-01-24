@@ -26,16 +26,20 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import fi.iki.elonen.NanoHTTPD;
+import rest.htpp.com.webprint.printer.Printer;
+
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_GET_STATUS;
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_CHART;
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_JOBS;
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_TEXT;
+import static rest.htpp.com.webprint.constants.WebServerConstants.MIME_XML;
 
 /**
  * The android web server class to serve http POST requests with specified endpoints
  */
 class AndroidWebServer extends NanoHTTPD {
 
-    private static final String ENDPOINT_TO_GET_STATUS = "/api/v1/fsstatus.xml";
-    private static final String ENDPOINT_TO_PRINT_JOBS = "/api/v1/printers/printjobs.xml";
-    private static final String MIME_XML = "application/xml";
-    private static final String TAG = "TransformerException";
+    private static final String TAG = "AndroidWebServer";
 
     AndroidWebServer(int port) {
         super(port);
@@ -96,33 +100,29 @@ class AndroidWebServer extends NanoHTTPD {
             return returnError(Response.Status.BAD_REQUEST, "Unsupported content type");
         }
         final Document xml = stringToXML(body.get("postData"));
-        if (null == xml) {
-            return returnError(Response.Status.BAD_REQUEST, "Malformed or empty XML file");
-        }
         switch (route) {
             case ENDPOINT_TO_GET_STATUS:
-                //TODO phase 1.3
-                return null;
+                updateXmlFile(xml, "Get Status");
+                break;
+            case ENDPOINT_TO_PRINT_TEXT:
+                updateXmlFile(xml, "Print Text");
+                break;
+            case ENDPOINT_TO_PRINT_CHART:
+                updateXmlFile(xml, "Print Chart");
+                break;
             case ENDPOINT_TO_PRINT_JOBS:
                 final Map<Integer, String> printStatus = Printer.print(xml);
-                return createResponse(printStatus, contentType);
+                return createPrinterResponse(printStatus, contentType);
             default:
                 return returnError(Response.Status.NOT_FOUND,
-                        "The endpoint is not supported for the first phase");
+                        "The endpoint is not supported for 1.2 phase");
         }
-
-    }
-
-    private Response createResponse(final Map<Integer, String> printStatus, final String contentType) {
-        final Iterator it = printStatus.entrySet().iterator();
-        final Map.Entry pair = (Map.Entry) it.next();
-        Response.IStatus status = Response.Status.BAD_REQUEST;
-        final String msg = pair.getValue().toString();
-        if (200 == (int) pair.getKey()) {
-            status = Response.Status.OK;
+        final String responseXML = xmlToString(xml);
+        if (null == xml || null == responseXML || 0 == responseXML.length()) {
+            return returnError(Response.Status.BAD_REQUEST, "Malformed or empty XML file");
         }
-        Response response = newFixedLengthResponse(status, contentType, msg);
-        response.addHeader("Content-Length", " " + msg.getBytes().length);
+        final Response response = newFixedLengthResponse(Response.Status.OK, contentType, responseXML);
+        response.addHeader("Content-Length", " " + responseXML.getBytes().length);
         return response;
     }
 
@@ -146,6 +146,25 @@ class AndroidWebServer extends NanoHTTPD {
     }
 
     /**
+     *
+     * @param printStatus Printer status
+     * @param contentType Response content type
+     * @return Response for printer command
+     */
+    private Response createPrinterResponse(final Map<Integer, String> printStatus, final String contentType) {
+        final Iterator it = printStatus.entrySet().iterator();
+        final Map.Entry pair = (Map.Entry) it.next();
+        Response.IStatus status = Response.Status.BAD_REQUEST;
+        final String msg = pair.getValue().toString();
+        if (Response.Status.OK.getRequestStatus() == (int) pair.getKey()) {
+            status = Response.Status.OK;
+        }
+        Response response = newFixedLengthResponse(status, contentType, msg);
+        response.addHeader("Content-Length", " " + msg.getBytes().length);
+        return response;
+    }
+
+    /**
      * Converts string to xml
      *
      * @param body the provided string to convert
@@ -159,6 +178,7 @@ class AndroidWebServer extends NanoHTTPD {
             dBuilder = dbFactory.newDocumentBuilder();
             xml = dBuilder.parse(new InputSource(new StringReader(body)));
         } catch (ParserConfigurationException | SAXException | IOException e) {
+            Log.e(TAG, e.getMessage());
             return null;
         }
         return xml;

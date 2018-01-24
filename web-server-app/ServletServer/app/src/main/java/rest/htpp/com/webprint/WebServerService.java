@@ -7,9 +7,13 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.basewin.services.ServiceManager;
+
 import java.io.IOException;
 
 import fi.iki.elonen.NanoHTTPD;
+
+import static rest.htpp.com.webprint.constants.WebServerConstants.*;
 
 /**
  * The android service class which runs web server in corresponding thread.
@@ -18,10 +22,7 @@ import fi.iki.elonen.NanoHTTPD;
  */
 public class WebServerService extends Service {
 
-    static final String TAG = "WebServerService";
-    static final String NEVER_KILLED_SERVER = "NEVER_KILLED_SERVER";
-    public static final String TOAST_TEXT = "Service is connected";
-    private static final int SERVER_PORT = 8888;
+    private static final String TAG = "WebServerService";
 
     private Handler mHandler = new Handler();
 
@@ -77,6 +78,7 @@ public class WebServerService extends Service {
     private void serverRunner() {
         final AndroidWebServer androidWebServer = new AndroidWebServer(SERVER_PORT);
         try {
+            ServiceManager.getInstence().init(getApplicationContext());
             androidWebServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, true);
         } catch (IOException e) {
             Log.e(TAG,"Couldn't start server:" + e);

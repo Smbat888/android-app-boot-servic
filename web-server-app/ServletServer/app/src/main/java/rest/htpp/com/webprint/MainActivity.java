@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.basewin.services.ServiceManager;
-
 import rest.htpp.com.webprint.fiscal.SerialPortReader;
 
 /**
@@ -18,9 +16,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         final Intent serviceIntent = new Intent(this, WebServerService.class);
-        ServiceManager.getInstence().init(getApplicationContext());
         new SerialPortReader();
         startService(serviceIntent);
-//        finish();
+        finish();
     }
+
 }

@@ -1,5 +1,4 @@
-package rest.htpp.com.webprint.xml-parser;
-
+package rest.htpp.com.webprint.constants;
 
 public class XMLDocConstants {
 
