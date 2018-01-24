@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -28,7 +29,9 @@ import fi.iki.elonen.NanoHTTPD;
 import rest.htpp.com.webprint.printer.Printer;
 
 import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_GET_STATUS;
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_CHART;
 import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_JOBS;
+import static rest.htpp.com.webprint.constants.WebServerConstants.ENDPOINT_TO_PRINT_TEXT;
 import static rest.htpp.com.webprint.constants.WebServerConstants.MIME_XML;
 
 /**
@@ -97,23 +100,58 @@ class AndroidWebServer extends NanoHTTPD {
             return returnError(Response.Status.BAD_REQUEST, "Unsupported content type");
         }
         final Document xml = stringToXML(body.get("postData"));
-        if (null == xml) {
-            return returnError(Response.Status.BAD_REQUEST, "Malformed or empty XML file");
-        }
         switch (route) {
             case ENDPOINT_TO_GET_STATUS:
-                //TODO phase 1.3
-                return null;
+                updateXmlFile(xml, "Get Status");
+                break;
+            case ENDPOINT_TO_PRINT_TEXT:
+                updateXmlFile(xml, "Print Text");
+                break;
+            case ENDPOINT_TO_PRINT_CHART:
+                updateXmlFile(xml, "Print Chart");
+                break;
             case ENDPOINT_TO_PRINT_JOBS:
                 final Map<Integer, String> printStatus = Printer.print(xml);
-                return createResponse(printStatus, contentType);
+                return createPrinterResponse(printStatus, contentType);
             default:
                 return returnError(Response.Status.NOT_FOUND,
-                        "The endpoint is not supported for the first phase");
+                        "The endpoint is not supported for 1.2 phase");
+        }
+        final String responseXML = xmlToString(xml);
+        if (null == xml || null == responseXML || 0 == responseXML.length()) {
+            return returnError(Response.Status.BAD_REQUEST, "Malformed or empty XML file");
+        }
+        final Response response = newFixedLengthResponse(Response.Status.OK, contentType, responseXML);
+        response.addHeader("Content-Length", " " + responseXML.getBytes().length);
+        return response;
+    }
+
+    /**
+     * Updates xml document to append simple child element with custom value
+     *
+     * @param xml the provided document to update
+     * @param msg the message to append to created child element
+     */
+    private void updateXmlFile(final Document xml, final String msg) {
+        if (null == xml) {
+            return;
+        }
+        final Element child = xml.createElement("child");
+        child.setAttribute("name", "updatedByServer");
+        child.setTextContent(msg);
+        final Element root = xml.getDocumentElement();
+        if (null != root) {
+            root.appendChild(child);
         }
     }
 
-    private Response createResponse(final Map<Integer, String> printStatus, final String contentType) {
+    /**
+     *
+     * @param printStatus Printer status
+     * @param contentType Response content type
+     * @return Response for printer command
+     */
+    private Response createPrinterResponse(final Map<Integer, String> printStatus, final String contentType) {
         final Iterator it = printStatus.entrySet().iterator();
         final Map.Entry pair = (Map.Entry) it.next();
         Response.IStatus status = Response.Status.BAD_REQUEST;

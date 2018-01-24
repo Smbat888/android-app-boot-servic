@@ -10,7 +10,10 @@ public final class WebServerConstants {
 
     // Endpoints
     public static final String ENDPOINT_TO_GET_STATUS = "/api/v1/fsstatus.xml";
+    public static final String ENDPOINT_TO_PRINT_TEXT = "/api/v1/printtxt.xml";
+    public static final String ENDPOINT_TO_PRINT_CHART = "/api/v1/printimg.xml";
     public static final String ENDPOINT_TO_PRINT_JOBS = "/api/v1/printers/printjobs.xml";
 
-      private WebServerConstants(){}
+    private WebServerConstants() {
+    }
 }
